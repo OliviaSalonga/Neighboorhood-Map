@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Coffee Shops in Cincy</title>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+	<meta charset="utf-8">
+	<style>
+		html, body {
+			height: 100%;
+			margin: 0;
+			padding: 0;
+		}
+		#map {
+			height: 100%;
+		}
+		.controls {
+			margin-top: 10px;
+			border: 1px solid transparent;
+			border-radius: 2px 0 0 2px;
+			box-sizing: border-box;
+			-moz-box-sizing: border-box;
+			height: 32px;
+			outline: none;
+			box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+		}
+
+		#pac-input {
+			background-color: #fff;
+			font-family: Roboto;
+			font-size: 15px;
+			font-weight: 300;
+			margin-left: 12px;
+			padding: 0 11px 0 13px;
+			text-overflow: ellipsis;
+			width: 300px;
+		}
+
+		#pac-input:focus {
+			border-color: #4d90fe;
+		
+
+		.pac-container {
+			font-family: Roboto;
+		}
+	</style> 
+	<script src="js/lib/knockout-3.4.0.js"></script>
+	<script src="js/lib/oauth-signature.js"></script>
+	<script src="js/lib/jQuery.js"></script>	
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAx_mIHUbn_zqn2he1mEwhSAtltOKCt79s&libraries=places&callback=googleSuccess" async defer onerror="googleError()"></script>
+
+</head>
+<body>
+	<input id="pac-input" type="text" list="options" class="controls" placeholder="Select a location" autocomplete="on">
+		<datalist id="options">
+		</datalist>
+	</input>		
+	<div id="map" class="controls"></div>
+	<script src="js/map.js"></script>
+</body>
+</html>

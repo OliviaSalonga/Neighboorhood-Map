@@ -2,17 +2,20 @@ Project: Neighborhood Map featuring "Coffee Shops in Cincinnati OH" Olivia Salon
 
 GENERAL USAGE NOTES
 -------------------
-This project lists & displays coffee shops in Cincinnati OH.  
-The list of coffee shops are provided thru a drop down list.  
+This project lists & displays coffee shops in Cincinnati OH.   
 The coffee shop(s) are displayed in the map using a coffee icon.
 
 This map display and list of coffee shops are from Google Maps API. 
 
-This list has autocomplete capabilities.  
-The map defaults to displaying all the coffee shops found in Cincinnati OH.  It will
-isolate map icon display depending on the coffee shop selected from the location entry field.
+This search field automatically filters the list of coffee shops containing the search text entered.  
+The filtered list of coffee shops is updated from the first character entered in the search field.
+It will contain all coffee shops found if no filter is entered which is the default when  
+site is opened.  
 
-The map icon displays the coffee shop details when clicked.  
+When a coffee shop is selected by clicking from the list, the selected coffee shop will have isolated marker display
+and be the center of the map. 
+
+The marker icon displays the coffee shop details when clicked.  
 The coffee shop details includes Shop Name, Yelp rating, location, and telphone number.
 These information are from Yelp API.  
 

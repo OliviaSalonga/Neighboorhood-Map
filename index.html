@@ -15,7 +15,7 @@
 	<div id="places">
 		<input id="pac-input" type="text" class="controls" placeholder="Select a location" data-bind="textInput: filterPlace, valueUpdate: 'afterkeydown'">
     	<ul id="place-list" style="list-style-type:none" data-bind="foreach: filteredPlace()">
-			<li data-bind="text: name, click: $parent.setCurrentPlace.bind($data, $index())" style="line-height: 25px"</li>
+			<li data-bind="text: name, click: $parent.openInfoWindow.bind($data, name)" style="line-height: 25px"</li>
 		</ul>
 	</div>	
 	<div id="map" class="controls"></div>

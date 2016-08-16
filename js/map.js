@@ -8,7 +8,15 @@ var Place = function (data) {
 	self.rating = data.rating;
 	self.image_url = data.image_url;
 	self.yelpCallSuccess = data.yelpCallSuccess;
-	self.marker = data.marker;
+
+	self.marker = new google.maps.Marker({
+		map: map,    
+		title: self.name,
+		clickable: true,
+		animation: google.maps.Animation.DROP,
+		icon: "http://maps.google.com/mapfiles/kml/shapes/coffee.png",
+		position: self.geometry.location
+	});
 };
 	
 var markers = [];
@@ -23,9 +31,9 @@ var yelpKeySecret = 'sgFRCaoqIjnQCwytcET0fMbVl8g';
 var yelpTokenSecret = 'uLam9rXlroNyXPQ2-nNI_FU8QzM';
 var yelpBaseUrl = 'https://api.yelp.com/v2/search?';
 
-
-var map;
-var service;
+var map, 
+	infoWindow,
+	service;
 
 // Set request information 
 var request = {
@@ -48,6 +56,11 @@ function googleSuccess() {
 	// Define Google map window and service Send 
     service = new google.maps.places.PlacesService(map);
 
+    infoWindow = new google.maps.InfoWindow({
+			maxHeight: 150,
+			maxWidth: 200
+	});
+
 	ko.applyBindings(new viewModel());
 };		
 
@@ -58,7 +71,6 @@ function viewModel() {
 	this.currentPlace = ko.observable();	
 	this.currentPlaceName = ko.observable();
 	this.filterPlace = ko.observable();
-
 
 	// set info window 
 	this.infoWindow = new google.maps.InfoWindow();
@@ -77,11 +89,19 @@ function viewModel() {
 	// Filter list of places depending on input
 	this.filteredPlace = ko.computed(function () {
 		var filter = self.filterPlace();
+
+		// First check if filter is null.  Otherwise, toLowerCase does not work with null values.
 		if (!filter) {
+			showAllMarkers();
 			return self.placeList();	
 		} else {
+			clearMarkers();
+			closeCurrentWindow();
          	return ko.utils.arrayFilter(self.placeList(), function (place) {
          		if (place.name.toLowerCase().indexOf(filter.toLowerCase()) >= 0) {
+         			var marker = place.marker;
+         			marker.setMap(map);
+         			map.panTo(marker.getPosition());
          			return place;
          		} else {
          			return false;
@@ -90,79 +110,63 @@ function viewModel() {
 		}
  	}, this);
 
-	// Set marker depending on place selected from list
-	this.setCurrentPlace = function(index) {
-		self.currentPlace(self.placeList()[index]);
-		self.currentPlaceName(self.currentPlace().name);
+	// Open info window of selected place  
+	this.openInfoWindow = function(placeName) {
+
+		// Find the name of place selected
+		var currentPlace = ko.utils.arrayFirst(self.placeList(), function(place) {
+			return placeName === place.name;
+		});
+		
+		// Close previous info window
 		closeCurrentWindow();
-		if (index < 0) {
-			// 'All' is selected, therefore show all markers
-			showAllMarkers();
-		} else { 
-			// Clear all markers and only display selected place
-			clearMarkers();
-			showMarkerOfSelectedPlace(index);
-		}
+		
+		// Set marker & marker settings
+		var marker = currentPlace.marker;
+		marker.setMap(map);
+		map.panTo(marker.getPosition());
+		marker.setAnimation(google.maps.Animation.BOUNCE);
+		setTimeout(function() {
+			marker.setAnimation(null);
+		}, 1500);
+
+		// Call Yelp API, Open info window 
+		callYelpAndOpenWindow(currentPlace);							
 	};
 
 	// Process Google map response 
 	function callback(mapResults, status) {
 		
-		if (status === google.maps.places.PlacesServiceStatus.OK) {
-			
-			mapResults.forEach(function(mapResult) {					
-				self.placeList.push(new Place(mapResult));
-				createMarker(new Place(mapResult));
+		if (status === google.maps.places.PlacesServiceStatus.OK) {		
+			mapResults.forEach(function(mapResult) {	
+				var place = new Place(mapResult); 				
+				markers.push(place.marker);
+				self.placeList.push(place);
+
+				// Define what action to do if marker is clicked
+				var marker = place.marker;
+				google.maps.event.addListener(marker, 'click', function() {
+					// Close previous info window
+					closeCurrentWindow();
+					// Call Yelp API, Open info window, set marker settings
+					callYelpAndOpenWindow(place);
+					map.setCenter(marker.position);
+					marker.setAnimation(google.maps.Animation.BOUNCE);
+					setTimeout(function() {
+						marker.setAnimation(null);
+					}, 1500);
+									
+				});
 			}, self);
-			// loadPlaceToListOfSelections();
 		}
 	}
-
-	// Create and display marker to a place
-	function createMarker(Place) {
-			
-		// Define marker for the place
-		Place.marker = new google.maps.Marker({
-			map: map,    
-			title: Place.name,
-			clickable: true,
-			animation: google.maps.Animation.DROP,
-			icon: "http://maps.google.com/mapfiles/kml/shapes/coffee.png",
-			position: Place.geometry.location
-		});
-		
-		// Add marker to list of markers
-		markers.push(Place.marker);
-
-		// Define what action to do if marker is clicked
-		google.maps.event.addListener(Place.marker, 'click', function() {
-			
-			// Close previous info window
-			closeCurrentWindow();
-			
-			// Call Yelp API, Open info window, set marker settings
-			callYelpAndOpenWindow(Place);
-			map.setCenter(Place.marker.position);
-			Place.marker.setAnimation(google.maps.Animation.BOUNCE);
-			setTimeout(function() {
-				Place.marker.setAnimation(null);
-			}, 1500);
-							
-		});
 	
-	}
-	
-	// Close previous info window
+	// Close previous info window otherwise, details of previous window 
+	// displays very briefly before details of current window is displayed.
 	function closeCurrentWindow() {			
 		if (currentInfoWindow) {  
 			currentInfoWindow.close();
 		}
-	}
-		  
-	// Display marker to selected place
-	function showMarkerOfSelectedPlace(index) {
-		markers[index].setMap(map);
-		map.panTo(markers[index].getPosition());
 	}
 
 	// Sets the map on all markers in the array.
@@ -269,18 +273,12 @@ function viewModel() {
 			
 		} 
 		
-		//Create the pop up window for each coffee shop
-		Place.infoWindow = new google.maps.InfoWindow({
-			content: infoWindowContent,
-			maxHeight: 150,
-			maxWidth: 200
-		});
-		
 		// Open window
-		Place.infoWindow.open(map, Place.marker);
+		infoWindow.setContent(infoWindowContent);
+		infoWindow.open(map, Place.marker);
 		
-		// Set current window
-		currentInfoWindow = Place.infoWindow;
+		// Set current window  
+		currentInfoWindow = infoWindow;
 	}
 
 }

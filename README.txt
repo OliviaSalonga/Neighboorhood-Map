@@ -8,12 +8,12 @@ The coffee shop(s) are displayed in the map using a coffee icon.
 This map display and list of coffee shops are from Google Maps API. 
 
 This search field automatically filters the list of coffee shops containing the search text entered.  
+The map markers also responds to the search text entered.  
 The filtered list of coffee shops is updated from the first character entered in the search field.
 It will contain all coffee shops found if no filter is entered which is the default when  
 site is opened.  
 
-When a coffee shop is selected by clicking from the list, the selected coffee shop will have isolated marker display
-and be the center of the map. 
+When a coffee shop is selected by clicking from the list, the details of the coffee shop is display and will be the center of map display.
 
 The marker icon displays the coffee shop details when clicked.  
 The coffee shop details includes Shop Name, Yelp rating, location, and telphone number.
